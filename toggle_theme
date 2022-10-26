@@ -1,0 +1,32 @@
+#!/usr/bin/env bb
+(ns toggle-theme
+  "Script to toggle between light and dark themes. Inspired by
+  https://github.com/pedrocr/dotfiles/blob/master/.config/sway/envsetup."
+  (:require [clojure.java.shell :refer [sh]]))
+
+(def themes
+  {:emacs
+   {:dark "doom-solarized-dark-high-contrast"
+    :light "doom-solarized-light"}
+   :gnome
+   {:dark  "Adwaita-dark"
+    :light "Adwaita"}})
+
+(def theme-preferences
+  ["gtk"
+   "icon"
+   "cursor"])
+
+(defn next-theme
+  []
+  (if (re-find #"dark" (:out (sh "gsettings" "get" "org.gnome.desktop.interface" "gtk-theme")))
+    :light
+    :dark))
+
+(let [switch-to    (next-theme)
+      gnome-theme ((:gnome themes) switch-to)]
+  (run!
+   #(sh "gsettings" "set" "org.gnome.desktop.interface" (str % "-theme") gnome-theme)
+   theme-preferences)
+
+  (sh "emacsclient" "-e" (str "(load-theme '" ((:emacs themes) switch-to) ")")))
