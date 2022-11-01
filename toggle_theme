@@ -17,16 +17,28 @@
    "icon"
    "cursor"])
 
-(defn next-theme
+(defn current-theme
   []
   (if (re-find #"dark" (:out (sh "gsettings" "get" "org.gnome.desktop.interface" "gtk-theme")))
+    :dark
+    :light))
+
+(defn next-theme
+  []
+  (if (= :dark (current-theme))
     :light
     :dark))
 
-(let [switch-to    (next-theme)
-      gnome-theme ((:gnome themes) switch-to)]
-  (run!
-   #(sh "gsettings" "set" "org.gnome.desktop.interface" (str % "-theme") gnome-theme)
-   theme-preferences)
+(case (some->> *command-line-args*
+               first)
+  "get" (println (name (current-theme)))
 
-  (sh "emacsclient" "-e" (str "(load-theme '" ((:emacs themes) switch-to) ")")))
+  "switch"
+  (let [switch-to    (next-theme)
+        gnome-theme ((:gnome themes) switch-to)]
+    (run!
+     #(sh "gsettings" "set" "org.gnome.desktop.interface" (str % "-theme") gnome-theme)
+     theme-preferences)
+
+    (sh "emacsclient" "-e" (str "(load-theme '" ((:emacs themes) switch-to) ")"))
+    nil))
