@@ -1,0 +1,33 @@
+#!/bin/bash
+#
+# Slowly dim the display when idle, reverting brightness when resuming.
+
+set -euo pipefail
+
+if (( $# > 0 )); then
+  if [[ $1 == 'kill' ]]; then
+    pkill idle-dimmer || true
+    exit
+  fi
+
+  exit 1
+fi
+
+declare -i initial_value
+initial_value=$(brightnessctl get)
+
+function revert() {
+  echo revert
+  brightnessctl set "${initial_value}"
+}
+
+trap revert EXIT
+
+declare -i sleep_interval_ms=$(( (100 - initial_value) * 1000 / 30 ))
+# shellcheck disable=SC2155
+declare -r sleep_interval=$(bc <<< "scale=2; $sleep_interval_ms / 1000" )
+declare -i value=$initial_value
+while (( --value >= 0 )); do
+  brightnessctl set "${value}"
+  sleep "${sleep_interval}"
+done
