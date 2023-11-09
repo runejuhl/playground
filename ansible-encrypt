@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Find ansible.cfg. We start in the current dir, look for the file, and go up
+# one directory unless we find the file.
+#
+# Since we need a non-zero exit status until we've found the file, we simply
+# pass the output to `grep` and match on anything.
+while [[ $PWD != / ]] && ! find . -maxdepth 1 -name ansible.cfg -print -quit |
+          grep . 2>/dev/null 1>&2; do
+  cd ..
+done
+
+if ! [[ -f ansible.cfg ]]; then
+  echo "Couldn't find ansible.cfg"
+  exit 1
+fi
+
+exec ansible-vault encrypt_string
