@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+unset WAYLAND_DISPLAY
+declare -rx DISPLAY=:1
+
+exec xclip -selection c
