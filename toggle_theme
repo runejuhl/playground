@@ -8,7 +8,7 @@
 (def themes
   {:emacs
    {:dark "doom-opera"
-    :light "doom-solarized-light"}
+    :light "doom-oksolar-light"}
    :gnome
    {:dark  "Adwaita-dark"
     :light "Adwaita"}})
