@@ -1,0 +1,24 @@
+#+title: playground
+#+author: Rune Juhl Jacobsen
+
+A collection of various small tools that usually live in =~/bin= or somewhere
+else on =$PATH=.
+* Descriptions
+** =ansible-encrypt=
+Encrypt =stdin= against an Ansible Vault. It traverses from the current
+directory in search of an =ansible.cfg= file, which means that it can be used
+from inside Emacs to encrypt strings, e.g. by marking a region and using =C-u
+M-|= (~shell-command-on-region~) to pipe the region to =ansible-encrypt= and
+automatically replace the region with the encrypted value.
+** =ansible-json=
+Extract JSON value from Ansible =stdout= output.
+** =jaml.clj=
+A Babashka script to convert JSON to YAML.
+** =toggle_theme=
+A Babashka script to toggle themes. Sets theme in GSettings and uses
+~emacsclient~ to switch themes in any Emacs servers with sockets in
+=XDG_RUNTIME_DIR=.
+** =idle-dimmer=
+An attempt at implementing a quick and dirty idle dimmer that lowers brightness when triggered by ~swayidle~.
+** =Xephyr-xclip=
+A wrapper around ~xclip~ to allow pasting through to an Xephyr session running on =DISPLAY\=:1=.
