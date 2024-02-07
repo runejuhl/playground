@@ -36,9 +36,23 @@
   "switch"
   (let [switch-to    (next-theme)
         gnome-theme ((:gnome themes) switch-to)]
+    ;; https://askubuntu.com/questions/1464937/inconsistent-dark-theme-for-gtk-apps-on-23-04
+    ;;
+    ;; $ gsettings get org.gnome.desktop.interface color-scheme
+    ;; 'prefer-dark'
+    ;; $ gsettings get org.gnome.desktop.interface gtk-theme
+    ;; 'Yaru-dark'
+    ;; $ gsettings get org.gnome.desktop.wm.preferences theme
+    ;; 'Yaru-dark'
+
+    ;; [["org.gnome.desktop.interface" "gtk-theme"]
+    ;;  ["org.gnome.desktop.wm.preferences" "theme"]]
+
+
     (run!
      #(sh "gsettings" "set" "org.gnome.desktop.interface" (str % "-theme") gnome-theme)
      theme-preferences)
+    (sh "gsettings" "set" "org.gnome.desktop.interface" "color-scheme" (name (if (= :dark (current-theme)) :prefer-light :prefer-dark)))
 
     (sh "emacsclient" "-e" (str "(load-theme '" ((:emacs themes) switch-to) ")"))
     nil))
