@@ -19,7 +19,8 @@
 
 (defn current-theme
   []
-  (if (re-find #"dark" (:out (sh "gsettings" "get" "org.gnome.desktop.interface" "gtk-theme")))
+  (if (re-find #"dark" (->> (sh "gsettings" "get" "org.gnome.desktop.interface" "color-scheme")
+                            :out))
     :dark
     :light))
 
@@ -52,7 +53,7 @@
     (run!
      #(sh "gsettings" "set" "org.gnome.desktop.interface" (str % "-theme") gnome-theme)
      theme-preferences)
-    (sh "gsettings" "set" "org.gnome.desktop.interface" "color-scheme" (name (if (= :dark (current-theme)) :prefer-light :prefer-dark)))
+    (sh "gsettings" "set" "org.gnome.desktop.interface" "color-scheme" (str "prefer-" (name (next-theme))))
 
-    (sh "emacsclient" "-e" (str "(load-theme '" ((:emacs themes) switch-to) ")"))
+    (sh "emacsclient" "-e" (str "(load-theme '" ((:emacs themes) (next-theme)) ")"))
     nil))
