@@ -40,6 +40,11 @@
            (map :name)
            )))
 
+(defn profile->emoji [profile]
+  (if (re-find #"a2dp" (name profile))
+    "🎧"
+    "🎤"))
+
 (defn toggle-card-profile [card]
   (let [current  (get-card-current-profile card)
         profiles (get-card-profiles card)]
@@ -47,7 +52,12 @@
     (if-let [next-profile (some->> profiles
                                    (remove (partial = current))
                                    first)]
-      (sh "pactl" "set-card-profile" card (name next-profile))
+      (do
+        (sh "pactl" "set-card-profile" card (name next-profile))
+        (profile->emoji next-profile))
       (prn "Error selecting next profile"))))
 
-(toggle-card-profile (get-current-sink-name))
+(case (some->> *command-line-args*
+               first)
+  "get"    (println (profile->emoji (get-card-current-profile (get-current-sink-name))))
+  "toggle" (println (toggle-card-profile (get-current-sink-name))))
