@@ -1,0 +1,53 @@
+#!/usr/bin/env bb
+(ns toggle-headset
+  (:require [clojure.java.shell :refer [sh]]
+            [cheshire.core :as json]))
+
+(defn get-current-sink-name []
+  (-> (sh "pactl" "--format=json" "list" "sinks")
+      :out
+      (json/parse-string true)
+      (->> (filter #(= (:state %) "RUNNING"))
+           (first)
+           :properties
+           :device.name)))
+
+(defn get-card-current-profile [card]
+  (-> (sh "pactl" "--format=json" "list" "cards")
+      :out
+      (json/parse-string true)
+      (->> (filter #(= (:name %) card))
+           (first)
+           :active_profile
+           keyword
+           )
+      ))
+
+
+(defn get-card-profiles [card]
+  (-> (sh "pactl" "--format=json" "list" "cards")
+      :out
+      (json/parse-string true)
+      (->> (filter #(= (:name %) card))
+           (first)
+           :profiles
+           (map #(assoc (second %) :name (first %)))
+           (filter :available)
+           (sort-by :priority >=)
+           (partition-by (comp pos? :sources))
+           (map first)
+           (take 2)
+           (map :name)
+           )))
+
+(defn toggle-card-profile [card]
+  (let [current  (get-card-current-profile card)
+        profiles (get-card-profiles card)]
+    [profiles current]
+    (if-let [next-profile (some->> profiles
+                                   (remove (partial = current))
+                                   first)]
+      (sh "pactl" "set-card-profile" card (name next-profile))
+      (prn "Error selecting next profile"))))
+
+(toggle-card-profile (get-current-sink-name))
