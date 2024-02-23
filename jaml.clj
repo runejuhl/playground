@@ -1,5 +1,5 @@
 #!/usr/bin/env bb
-(ns yaml
+(ns jaml
   (:require [cheshire.core :as json]
             [clj-yaml.core :as yaml]
             [clojure.java.io]))
